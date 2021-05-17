@@ -25,7 +25,7 @@ public class ReceiveThread extends Thread{
 			{
 				receiveString = tmpbuf.readLine();
 				
-				System.out.println("»ó´ë¹æ : " + receiveString);
+				System.out.println("Client : " + receiveString);
 			}
 			
 		} catch (IOException e) {

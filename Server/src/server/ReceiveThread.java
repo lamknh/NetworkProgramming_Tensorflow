@@ -26,12 +26,12 @@ public class ReceiveThread extends Thread{
 				
 				if(receiveString == null)
 				{
-					System.out.println("상대방 연결이 끊겼습니다.");
+					System.out.println("Disconnected ... ");
 					break;
 				}
 				else
 				{
-					System.out.println("상대방 : " + receiveString);
+					System.out.println("Server : " + receiveString);
 				}
 			}
 
