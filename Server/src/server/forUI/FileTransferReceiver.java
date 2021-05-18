@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+
 public class FileTransferReceiver extends Thread{
     private Socket socket;
 
@@ -30,8 +31,8 @@ public class FileTransferReceiver extends Thread{
             String file_name = fileNameStr.substring(lastIndex+1);
             String path_name = new String("C:\\Users\\Public\\" + file_name);
             FileOutputStream fos = new FileOutputStream(path_name);
-            //BufferedOutputStream bos = new BufferedOutputStream(fos);
-            //byte[] buffer = new byte[1024];
+            // BufferedOutputStream bos = new BufferedOutputStream(fos);
+            // byte[] buffer = new byte[1024];
 
             while(true){
                 int data=dis.read(/*buffer*/);
@@ -42,6 +43,15 @@ public class FileTransferReceiver extends Thread{
 
             System.out.println("File Transfer completed");
 
+            // Server에서 Docker랑 통신하는 부분
+            try {
+                System.out.println("Starting connection to Docker");
+                String[] cmdAry= {"python", "request_ml_server.py"};
+                Runtime.getRuntime().exec(cmdAry);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.println("Docker connection completed");
             //스트림 , 소켓 닫기
             //fos.close();
             dos.close();
