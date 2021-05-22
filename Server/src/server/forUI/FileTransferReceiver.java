@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 
 public class FileTransferReceiver extends Thread{
@@ -13,15 +12,11 @@ public class FileTransferReceiver extends Thread{
     @Override
     public void run(){
         try {
-            Scanner s = new Scanner(System.in);
-
             //데이터를 통신을 위해서 소켓의 스트림 얻기.
             InputStream in = socket.getInputStream();
             DataInputStream dis = new DataInputStream(in);
 
             OutputStream out = socket.getOutputStream();
-            DataOutputStream dos = new DataOutputStream(out);
-
             String fileNameStr = dis.readUTF(); //클라이언트로부터 파일명얻기
 
             System.out.println("Requested File :"+fileNameStr);
@@ -34,6 +29,7 @@ public class FileTransferReceiver extends Thread{
             // BufferedOutputStream bos = new BufferedOutputStream(fos);
             // byte[] buffer = new byte[1024];
 
+            System.out.println("Starting to File Transfer");
             while(true){
                 int data=dis.read(/*buffer*/);
                 if(data == -1) break;
@@ -46,19 +42,14 @@ public class FileTransferReceiver extends Thread{
             // Server에서 Docker랑 통신하는 부분
             try {
                 System.out.println("Starting connection to Docker");
-                String[] cmdAry= {"python", "request_ml_server.py"};
-                Runtime.getRuntime().exec(cmdAry);
+                // String[] cmdAry= {"python", "request_ml_server.py"};
+                // Runtime.getRuntime().exec(cmdAry);
             } catch (Exception e) {
                 System.out.println(e);
             }
             System.out.println("Docker connection completed");
+            // Client로 result 전송
             //스트림 , 소켓 닫기
-            //fos.close();
-            dos.close();
-            dis.close();
-            out.close();
-            in.close();
-            socket.close();
         } catch (UnknownHostException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
