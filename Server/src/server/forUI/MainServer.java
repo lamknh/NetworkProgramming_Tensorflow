@@ -18,10 +18,14 @@ public class MainServer {
 				FileTransferReceiver ftr = new FileTransferReceiver();
 				ftr.setSocket(c_socket);
 				ftr.start();
+				// while(ftr.getResult() == null);
+				/*
 				System.out.println("Start to send result to Client...");
 				SendThread send_thread = new SendThread();
 				send_thread.setSocket(c_socket);
+				send_thread.setResult(ftr.getResult());
 				send_thread.start();
+				*/
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

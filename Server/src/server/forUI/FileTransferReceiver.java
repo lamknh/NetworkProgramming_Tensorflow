@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 
 public class FileTransferReceiver extends Thread{
     private Socket socket;
+    private String result;
 
     @Override
     public void run(){
@@ -17,6 +18,8 @@ public class FileTransferReceiver extends Thread{
             DataInputStream dis = new DataInputStream(in);
 
             OutputStream out = socket.getOutputStream();
+            DataOutputStream dos = new DataOutputStream(out);
+
             String fileNameStr = dis.readUTF(); //클라이언트로부터 파일명얻기
 
             System.out.println("Requested File :"+fileNameStr);
@@ -30,12 +33,28 @@ public class FileTransferReceiver extends Thread{
             // byte[] buffer = new byte[1024];
 
             System.out.println("Starting to File Transfer");
-            while(true){
-                int data=dis.read(/*buffer*/);
-                if(data == -1) break;
-                fos.write(data);
-                //bos.write(buffer,0,data);
+
+
+            byte[] dataBuff = new byte[10000];
+            int length = dis.read(dataBuff);
+            while (length != -1) {
+                System.out.print(".");
+                System.out.println(length + " | " + dataBuff);
+                fos.write(dataBuff, 0, length);
+                if(length < 10000) break;
+                else length = dis.read(dataBuff);
             }
+
+
+            /*
+            while(true){
+            int data=dis.read(//buffer);
+            System.out.println(data);
+            if(data == -1) break;
+            fos.write(data);
+            //bos.write(buffer,0,data);
+            }*/
+
 
             System.out.println("File Transfer completed");
 
@@ -50,16 +69,29 @@ public class FileTransferReceiver extends Thread{
             System.out.println("Docker connection completed");
             // Client로 result 전송
             //스트림 , 소켓 닫기
+            result = "DOCKER RESULT";
+            System.out.println("Start to send result to Client...");
+            SendThread send_thread = new SendThread();
+            send_thread.setSocket(socket);
+            send_thread.setResult(result);
+            send_thread.start();
         } catch (UnknownHostException e) {
             // TODO Auto-generated catch block
+            System.out.println("UnknownHostException Detected");
             e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            System.out.println("IOException Detected");
             e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Error Detected");
         }
     }
     public void setSocket(Socket _socket)
     {
         socket = _socket;
+    }
+    public String getResult() {
+        return result;
     }
 }

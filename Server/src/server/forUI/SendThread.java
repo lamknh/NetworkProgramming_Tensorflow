@@ -7,13 +7,13 @@ import java.net.Socket;
 public class SendThread extends Thread{
 
 	private Socket m_Socket;
-	
+	private String sendString = "Invalid TEST MESSAGE";
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		try {
 			PrintWriter sendWriter = new PrintWriter(m_Socket.getOutputStream());
-			String sendString = "TEST MESSAGE";
+
 			sendWriter.println(sendString);
 			sendWriter.flush();
 			System.out.println("Successfully sent result.");
@@ -27,5 +27,8 @@ public class SendThread extends Thread{
 	{
 		m_Socket = _socket;
 	}
-	
+
+	public void setResult(String _result) {
+		sendString = _result;
+	}
 }
