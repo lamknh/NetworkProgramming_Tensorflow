@@ -9,21 +9,21 @@ import java.net.Socket;
 public class ReceiveThread extends Thread{
 
 	private Socket m_Socket;
-	
+
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		super.run();
-		
+
 		try {
 			BufferedReader tmpbuf = new BufferedReader(new InputStreamReader(m_Socket.getInputStream()));
-			
+
 			String receiveString;
-			
+
 			while(true)
 			{
 				receiveString = tmpbuf.readLine();
-				
+
 				if(receiveString == null)
 				{
 					System.out.println("Disconnected ... ");
@@ -36,13 +36,13 @@ public class ReceiveThread extends Thread{
 			}
 
 			tmpbuf.close();
-			
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void setSocket(Socket _socket)
 	{
 		m_Socket = _socket;

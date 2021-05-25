@@ -1,31 +1,22 @@
 package server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
 public class SendThread extends Thread{
 
 	private Socket m_Socket;
-	
+	private String sendString = "Invalid TEST MESSAGE";
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		super.run();
 		try {
-			BufferedReader tmpbuf = new BufferedReader(new InputStreamReader(System.in));
 			PrintWriter sendWriter = new PrintWriter(m_Socket.getOutputStream());
-			String sendString;
-			
-			while(true)
-			{
-				sendString = tmpbuf.readLine();
-				
-				sendWriter.println(sendString);
-				sendWriter.flush();
-			}
+
+			sendWriter.println(sendString);
+			sendWriter.flush();
+			System.out.println("Successfully sent result.");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -36,5 +27,8 @@ public class SendThread extends Thread{
 	{
 		m_Socket = _socket;
 	}
-	
+
+	public void setResult(String _result) {
+		sendString = _result;
+	}
 }
