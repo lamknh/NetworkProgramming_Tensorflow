@@ -9,6 +9,7 @@ import java.net.Socket;
 
 public class FileLoadUI {
     private JFrame fr = new JFrame("TestTitle");
+    private Container c;
     private JLabel imgLabel = new JLabel();
     private JLabel infoLabel = new JLabel("사진 파일을 불러와주십시오.");
 
@@ -18,6 +19,8 @@ public class FileLoadUI {
 
     private JButton sendImgButton = new JButton("Send Image");
     private JButton loadImgButton = new JButton("Load Image");
+
+    // private JFrame loadingWindow;
 
     private String path_name;
     private String result = "test";
@@ -36,12 +39,19 @@ public class FileLoadUI {
         loadImgButton.setSize(100, 50);
         loadImgButton.addActionListener(new FileOpenActionListener());
         buttonPanel.add(loadImgButton);
+        sendImgButton.setSize(100, 50);
+        sendImgButton.addActionListener(new FileSendActionListener());
+        buttonPanel.add(sendImgButton);
+        sendImgButton.setVisible(false);
 
         infoPanel.add(infoLabel);
 
         fr.add(infoPanel, BorderLayout.NORTH);
         fr.add(imgPanel, BorderLayout.CENTER);
         fr.add(buttonPanel, BorderLayout.SOUTH);
+
+
+        // loadingWindow = new LoadingWindow();
 
         Dimension frameSize = fr.getSize();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -68,9 +78,7 @@ public class FileLoadUI {
                 return;
             }
 
-            sendImgButton.setSize(100, 50);
-            sendImgButton.addActionListener(new FileSendActionListener());
-            buttonPanel.add(sendImgButton);
+            sendImgButton.setVisible(true);
 
             String original_filePath = chooser.getSelectedFile().getPath();
             // System.out.println(original_filePath);
@@ -101,6 +109,7 @@ public class FileLoadUI {
                     System.exit(0);
                 }
 
+                // loadingWindow.setVisible(true);
                 loadImgButton.setEnabled(false);
                 sendImgButton.setEnabled(false);
 
@@ -118,16 +127,31 @@ public class FileLoadUI {
 
                 //서버프로그램이 실행되는 컴퓨터에 파일폴더로 사용할 폴더 생성.
                 FileInputStream fin = new FileInputStream(path_name);
+
+
+                byte[] dataBuff = new byte[10000];
+                int length = fin.read(dataBuff);
+                while (length != -1) {
+                    System.out.println(length + " | " + dataBuff);
+                    dos.write(dataBuff, 0, length);
+                    length = fin.read(dataBuff);
+                }
+
+
+                /*
                 while(true){ //FileInputStream을 통해 파일을 읽어들여서 소켓의 출력스트림을 통해 출력.
                     int data=fin.read();
+                    System.out.println(data);
                     if(data == -1) break;
                     dos.write(data);
                 }
+                */
 
                 System.out.println("Reading Result...");
                 result = brd.readLine();
                 System.out.println("Result : " + result);
 
+                // loadingWindow.setVisible(false);
                 infoLabel.setText("분석결과 : " + result + "입니다.");
 
                 loadImgButton.setEnabled(true);
@@ -148,4 +172,5 @@ public class FileLoadUI {
             }
         }
     }
+
 }
