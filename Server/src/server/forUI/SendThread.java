@@ -13,7 +13,7 @@ public class SendThread extends Thread{
 		// TODO Auto-generated method stub
 		try {
 			PrintWriter sendWriter = new PrintWriter(m_Socket.getOutputStream());
-
+			System.out.println("Sending : " + sendString);
 			sendWriter.println(sendString);
 			sendWriter.flush();
 			System.out.println("Successfully sent result.");
