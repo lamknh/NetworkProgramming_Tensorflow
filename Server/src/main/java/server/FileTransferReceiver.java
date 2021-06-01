@@ -35,8 +35,8 @@ public class FileTransferReceiver extends Thread{
             byte[] dataBuff = new byte[10000];
             int length = dis.read(dataBuff);
             while (length != -1) {
-                System.out.print(".");
-                System.out.println(length + " | " + dataBuff);
+                // System.out.print(".");
+                // System.out.println(length + " | " + dataBuff);
                 fos.write(dataBuff, 0, length);
                 if(length < 10000) break;
                 else length = dis.read(dataBuff);
@@ -44,6 +44,8 @@ public class FileTransferReceiver extends Thread{
 
             System.out.println("File Transfer completed");
 
+            // 뮤텍스 등으로 묶기 시작할 부분
+            
             // Server에서 Docker랑 통신하는 부분
             try {
                 System.out.println("Starting connection to Docker : " + path_name);
@@ -71,20 +73,44 @@ public class FileTransferReceiver extends Thread{
                 //.readLine()은 끝에 개행문자를 읽지 않는다.
                 bufReader.close();
 
+                // Receive를 받는 쓰레드에서 바로 처리
+                PrintWriter sendWriter = new PrintWriter(socket.getOutputStream());
+                System.out.println("Start to send result to Client... >>> " + result);
+                // System.out.println("Sending : " + result);
+                sendWriter.println(result);
+                sendWriter.flush();
+                System.out.println("Successfully sent result.");
+
+                // 멀티 쓰레드를 활용한 전송
+                /*
                 System.out.println("Start to send result to Client... >>>" + result);
                 SendThread send_thread = new SendThread();
                 send_thread.setSocket(socket);
                 send_thread.setResult(result);
                 send_thread.start();
+                */
             }catch (FileNotFoundException e) {
-                System.out.println("Start to send Error... >>>" + result);
+                PrintWriter sendWriter = new PrintWriter(socket.getOutputStream());
+                System.out.println("Start to send result to Client... >>> " + result);
+                // System.out.println("Sending : " + result);
+                sendWriter.println("ERROR");
+                sendWriter.flush();
+                System.out.println("Successfully sent result.");
+
+
+                // 멀티 쓰레드를 활용한 전송
+                /*
+                System.out.println("File Loading Failed! Start to send Error...");
                 SendThread send_thread = new SendThread();
                 send_thread.setSocket(socket);
                 send_thread.setResult("ERROR");
                 send_thread.start();
+                */
             }catch(IOException e){
                 System.out.println(e);
             }
+
+            // 뮤텍스 등으로 묶기를 끝낼 부분
         } catch (UnknownHostException e) {
             // TODO Auto-generated catch block
             System.out.println("UnknownHostException Detected");

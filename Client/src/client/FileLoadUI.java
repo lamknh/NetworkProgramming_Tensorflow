@@ -5,10 +5,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 
 public class FileLoadUI {
-    private JFrame fr = new JFrame("TestTitle");
+    private JFrame fr = new JFrame("Cat vs Dog");
     private Container c;
     private JLabel imgLabel = new JLabel();
     private JLabel infoLabel = new JLabel("사진 파일을 불러와주십시오.");
@@ -29,26 +30,36 @@ public class FileLoadUI {
     FileLoadUI() {
         fr.setSize(400,500);
         fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        fr.setBackground(Color.WHITE);
         fr.setLayout(new BorderLayout());
 
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
                 "JPG & GIF Images", "jpg", "gif");
         chooser.setFileFilter(filter);
 
+        imgPanel.setBackground(Color.WHITE);
         imgPanel.setLayout(new BorderLayout());
+        infoPanel.setBackground(Color.WHITE);
         infoPanel.setLayout(new FlowLayout());
+        buttonPanel.setBackground(Color.WHITE);
         buttonPanel.setLayout(new FlowLayout());
 
         /* 이미지 로드 버튼 생성 */
 
         loadImgButton.setSize(100, 50);
+        loadImgButton.setBackground(Color.WHITE);
+        loadImgButton.setFont(new Font("맑은 고딕", Font.BOLD, 15));
         loadImgButton.addActionListener(new FileOpenActionListener());
         buttonPanel.add(loadImgButton);
+
         sendImgButton.setSize(100, 50);
+        sendImgButton.setBackground(Color.WHITE);
+        sendImgButton.setFont(new Font("맑은 고딕", Font.BOLD, 15));
         sendImgButton.addActionListener(new FileSendActionListener());
         buttonPanel.add(sendImgButton);
         sendImgButton.setVisible(false);
 
+        infoLabel.setFont(new Font("맑은 고딕", Font.BOLD, 20));
         infoPanel.add(infoLabel);
 
         fr.add(infoPanel, BorderLayout.NORTH);
@@ -81,7 +92,14 @@ public class FileLoadUI {
             // System.out.println(original_filePath);
             temp = new ImageIcon(original_filePath);
             Image im = temp.getImage(); //뽑아온 이미지 객체 사이즈를 새롭게 만들기!
-            Image im2 = im.getScaledInstance(temp.getIconWidth()/2, temp.getIconHeight()/2, Image.SCALE_DEFAULT);
+
+            // 가로 기준으로 설정
+            int imageWidth = im.getWidth(null);
+            int imageHeight = im.getHeight(null);
+            double ratio = (double)400/(double)imageWidth;
+            int w = (int)(imageWidth * ratio);
+            int h = (int)(imageHeight * ratio);
+            Image im2 = im.getScaledInstance(w, h, Image.SCALE_SMOOTH);
             ImageIcon icon2 = new ImageIcon(im2);
             imgLabel.setIcon(icon2);
 
@@ -101,12 +119,7 @@ public class FileLoadUI {
         public void actionPerformed(ActionEvent a) {
             try {
                 Socket c_socket = new Socket("127.0.0.1", 8888);
-                if(!c_socket.isConnected()){
-                    System.out.println("Socket Connect Error.");
-                    System.exit(0);
-                }
 
-                // loadingWindow.setVisible(true);
                 loadImgButton.setEnabled(false);
                 sendImgButton.setEnabled(false);
 
@@ -125,15 +138,13 @@ public class FileLoadUI {
                 //서버프로그램이 실행되는 컴퓨터에 파일폴더로 사용할 폴더 생성.
                 FileInputStream fin = new FileInputStream(path_name);
 
-
                 byte[] dataBuff = new byte[10000];
                 int length = fin.read(dataBuff);
                 while (length != -1) {
-                    System.out.println(length + " | " + dataBuff);
+                    // System.out.println(length + " | " + dataBuff);
                     dos.write(dataBuff, 0, length);
                     length = fin.read(dataBuff);
                 }
-
 
                 /*
                 while(true){ //FileInputStream을 통해 파일을 읽어들여서 소켓의 출력스트림을 통해 출력.
@@ -148,8 +159,10 @@ public class FileLoadUI {
                 result = brd.readLine();
                 System.out.println("Result : " + result);
 
-                // loadingWindow.setVisible(false);
-                infoLabel.setText("분석결과 : " + result + "입니다.");
+                if(result.equals("Cat") || result.equals("Dog"))
+                    infoLabel.setText("분석결과 : " + result + "입니다.");
+                else
+                    infoLabel.setText(result + " : 에러가 발생했습니다.");
 
                 loadImgButton.setEnabled(true);
                 sendImgButton.setEnabled(true);
@@ -161,6 +174,11 @@ public class FileLoadUI {
                 in.close();
                 out.close();
                 c_socket.close();
+            }catch (ConnectException e){
+                System.out.println("Socket Connect Error.");
+                JOptionPane.showMessageDialog(null, "연결에 실패했습니다.\n프로그램을 재기동하여 서버 주소와 포트를 확인한 후 다시 입력해주십시오.",
+                        "소켓 통신 에러", JOptionPane.ERROR_MESSAGE);
+                System.exit(0);
             } catch (IOException e) {
                 loadImgButton.setEnabled(true);
                 sendImgButton.setEnabled(true);
