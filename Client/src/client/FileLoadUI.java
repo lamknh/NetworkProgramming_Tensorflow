@@ -10,7 +10,6 @@ import java.net.Socket;
 
 public class FileLoadUI {
     private JFrame fr = new JFrame("Cat vs Dog");
-    private Container c;
     private JLabel imgLabel = new JLabel();
     private JLabel infoLabel = new JLabel("사진 파일을 불러와주십시오.");
 
@@ -22,10 +21,12 @@ public class FileLoadUI {
     private JButton loadImgButton = new JButton("Load Image");
 
     private JFileChooser chooser = new JFileChooser();
-    // private JFrame loadingWindow;
 
     private String path_name;
-    private String result = "test";
+    private String result = "";
+
+    private String address = "127.0.0.1";
+    private int port = 8888;
 
     FileLoadUI() {
         fr.setSize(400,500);
@@ -34,7 +35,7 @@ public class FileLoadUI {
         fr.setLayout(new BorderLayout());
 
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "JPG & GIF Images", "jpg", "gif");
+                "JPG Images", "jpg");
         chooser.setFileFilter(filter);
 
         imgPanel.setBackground(Color.WHITE);
@@ -66,14 +67,11 @@ public class FileLoadUI {
         fr.add(imgPanel, BorderLayout.CENTER);
         fr.add(buttonPanel, BorderLayout.SOUTH);
 
-
-        // loadingWindow = new LoadingWindow();
-
         Dimension frameSize = fr.getSize();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        fr.setLocation((screenSize.width - frameSize.width) /2, (screenSize.height - frameSize.height) /2);
+        fr.setLocation((screenSize.width - frameSize.width) /2,
+                (screenSize.height - frameSize.height) /2);
         fr.setResizable(false);
-        fr.setVisible(true);
     }
 
     class FileOpenActionListener implements ActionListener {
@@ -89,9 +87,8 @@ public class FileLoadUI {
             sendImgButton.setVisible(true);
 
             String original_filePath = chooser.getSelectedFile().getPath();
-            // System.out.println(original_filePath);
             temp = new ImageIcon(original_filePath);
-            Image im = temp.getImage(); //뽑아온 이미지 객체 사이즈를 새롭게 만들기!
+            Image im = temp.getImage();
 
             // 가로 기준으로 설정
             int imageWidth = im.getWidth(null);
@@ -105,7 +102,6 @@ public class FileLoadUI {
 
             imgPanel.add(imgLabel, BorderLayout.CENTER);
             infoLabel.setText("다음 사진을 전송합니다.");
-            /* 파일 전송 부분 */
 
             path_name = new String(original_filePath);
 
@@ -118,7 +114,7 @@ public class FileLoadUI {
 
         public void actionPerformed(ActionEvent a) {
             try {
-                Socket c_socket = new Socket("127.0.0.1", 8888);
+                Socket c_socket = new Socket(address, port);
 
                 loadImgButton.setEnabled(false);
                 sendImgButton.setEnabled(false);
@@ -135,25 +131,14 @@ public class FileLoadUI {
                 System.out.println("File Name : " + path_name);
                 dos.writeUTF(path_name);
 
-                //서버프로그램이 실행되는 컴퓨터에 파일폴더로 사용할 폴더 생성.
                 FileInputStream fin = new FileInputStream(path_name);
 
                 byte[] dataBuff = new byte[10000];
                 int length = fin.read(dataBuff);
                 while (length != -1) {
-                    // System.out.println(length + " | " + dataBuff);
                     dos.write(dataBuff, 0, length);
                     length = fin.read(dataBuff);
                 }
-
-                /*
-                while(true){ //FileInputStream을 통해 파일을 읽어들여서 소켓의 출력스트림을 통해 출력.
-                    int data=fin.read();
-                    System.out.println(data);
-                    if(data == -1) break;
-                    dos.write(data);
-                }
-                */
 
                 System.out.println("Reading Result...");
                 result = brd.readLine();
@@ -166,6 +151,7 @@ public class FileLoadUI {
 
                 loadImgButton.setEnabled(true);
                 sendImgButton.setEnabled(true);
+
                 //스트림 , 소켓 닫기
                 fin.close();
                 dos.close();
@@ -176,16 +162,35 @@ public class FileLoadUI {
                 c_socket.close();
             }catch (ConnectException e){
                 System.out.println("Socket Connect Error.");
-                JOptionPane.showMessageDialog(null, "연결에 실패했습니다.\n프로그램을 재기동하여 서버 주소와 포트를 확인한 후 다시 입력해주십시오.",
+                JOptionPane.showMessageDialog(null,
+                        "연결에 실패했습니다.\n프로그램을 재기동하여" +
+                                " 서버 주소와 포트를 확인한 후 다시 입력해주십시오.",
                         "소켓 통신 에러", JOptionPane.ERROR_MESSAGE);
                 System.exit(0);
             } catch (IOException e) {
                 loadImgButton.setEnabled(true);
                 sendImgButton.setEnabled(true);
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
     }
 
-}
+    public void setAddress(String _address) {
+        this.address = _address;
+    }
+
+    public void setPort(int _port) {
+        this.port = _port;
+    }
+
+    public void setVisible(boolean input) {
+        if(input)
+            fr.setVisible(true);
+        else
+            fr.setVisible(false);
+    }
+
+    public void dispose() {
+        fr.dispose();
+    }
+ }
