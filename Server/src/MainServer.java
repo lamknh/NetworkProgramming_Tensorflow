@@ -34,7 +34,7 @@ public class MainServer {
 				FileTransferReceiver ftr = new FileTransferReceiver();
 				ftr.setSocket(c_socket);
 				ftr.start();
-				ftr.join(); // Thread 간 실핼순서를 동기화
+				ftr.join(); // Thread 간 실행순서를 동기화
 			}
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
