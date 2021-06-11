@@ -34,16 +34,9 @@ public class MainServer {
 				FileTransferReceiver ftr = new FileTransferReceiver();
 				ftr.setSocket(c_socket);
 				ftr.start();
-				// while(ftr.getResult() == null);
-				/*
-				System.out.println("Start to send result to Client...");
-				SendThread send_thread = new SendThread();
-				send_thread.setSocket(c_socket);
-				send_thread.setResult(ftr.getResult());
-				send_thread.start();
-				*/
+				ftr.join(); // Thread 간 실핼순서를 동기화
 			}
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

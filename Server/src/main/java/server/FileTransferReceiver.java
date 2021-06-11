@@ -11,7 +11,7 @@ public class FileTransferReceiver extends Thread{
     private String result;
 
     @Override
-    public void run(){
+    public void run() {
         try {
             //데이터를 통신을 위해서 소켓의 스트림 얻기.
             InputStream in = socket.getInputStream();
@@ -19,34 +19,32 @@ public class FileTransferReceiver extends Thread{
 
             String fileNameStr = dis.readUTF(); //클라이언트로부터 파일명얻기
 
-            System.out.println("Requested File :"+fileNameStr);
-            System.out.println("Request File to Client");
-            System.out.println("Get file data from Client");
+            System.out.println("Requested File :" + fileNameStr);
+            System.out.println("Request File to Client.");
+            System.out.println("Get file data from Client.");
             int lastIndex = fileNameStr.lastIndexOf("\\"); // 마지막으로 \가 나타나는 지점을 찾음
             String file_name = fileNameStr.substring(lastIndex+1);
             String path_name = new String("C:\\Users\\Public\\" + file_name);
             FileOutputStream fos = new FileOutputStream(path_name);
-            // BufferedOutputStream bos = new BufferedOutputStream(fos);
-            // byte[] buffer = new byte[1024];
 
-            System.out.println("Starting to File Transfer");
-
+            System.out.println("Starting to File Transfer...");
 
             byte[] dataBuff = new byte[10000];
             int length = dis.read(dataBuff);
+            System.out.print("[■");
             while (length != -1) {
-                // System.out.print(".");
-                // System.out.println(length + " | " + dataBuff);
                 fos.write(dataBuff, 0, length);
-                if(length < 10000) break;
-                else length = dis.read(dataBuff);
+                if(length < 10000) {
+                    System.out.println("■]");
+                    break;
+                } else {
+                    length = dis.read(dataBuff);
+                    System.out.print("■");
+                }
             }
 
-            System.out.println("File Transfer completed");
+            System.out.println("File Transfer completed.");
 
-            // 뮤텍스 등으로 묶기 시작할 부분
-            
-            // Server에서 Docker랑 통신하는 부분
             try {
                 System.out.println("Starting connection to Docker : " + path_name);
                 String[] cmdAry= {"python", "prediction.py", path_name};
@@ -55,7 +53,7 @@ public class FileTransferReceiver extends Thread{
             } catch (Exception e) {
                 System.out.println(e);
             }
-            System.out.println("Docker connection completed");
+            System.out.println("Docker connection completed.");
             // Client로 result 전송
             //스트림 , 소켓 닫기
             String line = "";
@@ -72,6 +70,17 @@ public class FileTransferReceiver extends Thread{
                 }
                 //.readLine()은 끝에 개행문자를 읽지 않는다.
                 bufReader.close();
+                filereader.close();
+
+                if(file.exists()) { // 결과 중복 방지를 위해 읽은 파일은 다시 삭제
+                    if(file.delete()){
+                        System.out.println("Successfully Deleted File.");
+                    } else {
+                        System.out.println("Error to Delete file.");
+                    }
+                } else {
+                    System.out.println("Already File is deleted.");
+                }
 
                 // Receive를 받는 쓰레드에서 바로 처리
                 PrintWriter sendWriter = new PrintWriter(socket.getOutputStream());
@@ -80,53 +89,34 @@ public class FileTransferReceiver extends Thread{
                 sendWriter.println(result);
                 sendWriter.flush();
                 System.out.println("Successfully sent result.");
-
-                // 멀티 쓰레드를 활용한 전송
-                /*
-                System.out.println("Start to send result to Client... >>>" + result);
-                SendThread send_thread = new SendThread();
-                send_thread.setSocket(socket);
-                send_thread.setResult(result);
-                send_thread.start();
-                */
-            }catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 PrintWriter sendWriter = new PrintWriter(socket.getOutputStream());
                 System.out.println("Start to send result to Client... >>> " + result);
                 // System.out.println("Sending : " + result);
                 sendWriter.println("ERROR");
                 sendWriter.flush();
                 System.out.println("Successfully sent result.");
-
-
-                // 멀티 쓰레드를 활용한 전송
-                /*
-                System.out.println("File Loading Failed! Start to send Error...");
-                SendThread send_thread = new SendThread();
-                send_thread.setSocket(socket);
-                send_thread.setResult("ERROR");
-                send_thread.start();
-                */
-            }catch(IOException e){
+            } catch(IOException e) {
                 System.out.println(e);
             }
-
-            // 뮤텍스 등으로 묶기를 끝낼 부분
         } catch (UnknownHostException e) {
             // TODO Auto-generated catch block
-            System.out.println("UnknownHostException Detected");
+            System.out.println("UnknownHostException Detected.");
             e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            System.out.println("IOException Detected");
+            System.out.println("IOException Detected.");
             e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("Error Detected");
+            System.out.println("Error Detected.");
+            e.printStackTrace();
         }
     }
-    public void setSocket(Socket _socket)
-    {
+
+    public void setSocket(Socket _socket) {
         socket = _socket;
     }
+
     public String getResult() {
         return result;
     }
